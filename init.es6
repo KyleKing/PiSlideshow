@@ -19,5 +19,5 @@ process.env.DEBUG = program.debug || false;
 process.env.LOCAL = program.local || false;
 
 const config = require('./modules/configure.es6');
-const dbCloudDir = fs.readJsonSync('./secret.json');
+const dbCloudDir = fs.readJsonSync('./secret.json').balloonDir;
 config.init(dbCloudDir);

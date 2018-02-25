@@ -43,6 +43,8 @@ module.exports = {
             if (notFound)
               client.get(filepath, options, (stat, reply) => {
                 // const localpath = `images/${path.basename(metadata.path)}`;
+                photoDebug(`Writing: ${localpath} with:`);
+                console.log(reply);
                 const wstream = fs.createWriteStream(localpath);
                 wstream.write(reply);
                 console.log(warn(`>> Downloaded: ${localpath}`));

@@ -49,6 +49,43 @@ Three 3D printed feet hold everything sandwiched in place along with the origina
 
 <!-- [![Balloon.io](README/balloon.png)](https://balloon.io/) -->
 
+### The FBI Command
+
+`sudo fbi -T 1 -a -u -t 2 --blend 2 -noverbose --random --noonce *`
+
+-noverbose [get rid of the distracting text banner on the bottom of the screen]
+-a [autozoom]
+-u or --random [duh]
+-T *#* [basically use the device SSH'd into]
+-t *#* [time in seconds between images]
+--noonce [loop display]
+--blend *#* [time in ms to overlap images (no intermediate black screen)]
+* (the path to the images, I already `cd` into the proper directory)
+
+Use: `ps aux | grep [f]bi` to check if actively running and use the `[f]` to avoid recursively finding the ps aux tack itself
+
+### Raspberry Pi Tweaks to make this work
+
+Prevent the display from sleeping ([Source](http://www.raspberry-projects.com/pi/pi-operating-systems/raspbian/gui/disable-screen-sleep)). Run `sudo nano /etc/lightdm/lightdm.conf` then add the following lines to the [SeatDefaults]:
+
+```bash
+# don't let display sleep:
+xserver-command=X -s 0 dpms
+```
+
+<!-- ARCHIVED:
+Keep the HDMI output always active. Open the Raspberry Pi configuration file for editing with this `sudo nano /boot/config.txt` and append these lines:
+
+```bash
+#Always force HDMI output and enable HDMI sound
+hdmi_force_hotplug=1
+hdmi_drive=2
+``` -->
+
 ## Acknowledgments
 
 [This guide](http://www.ofbrooklyn.com/2014/01/2/building-photo-frame-raspberry-pi-motion-detector/) inspired this project
+
+## Made by
+
+[Kyle King](http://kyleking.me)

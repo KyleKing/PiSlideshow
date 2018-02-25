@@ -24,7 +24,8 @@ module.exports = {
     this.dbCloudDir = dbCloudDir;
     // Clear the entire directory and then make an empty one:
     configDebug('Delete then re-created "images/" directory');
-    fs.removeSync('images');
+    configDebug(warn('NOT DELETING image/ dir!!!'));
+    // fs.removeSync('images');
     fs.ensureDirSync('images');
     // Flush both inventory files:
     fs.writeFileSync('history.json', '[]');
@@ -133,30 +134,36 @@ once approved, rerun this app with: ${cmd}`;
     };
 
     client.metadata(this.dbCloudDir, options, (status, reply) => {
-      this.contentslength = reply.contents.length;
-      this.workaround = 0;
-      for (let i = 0; i < this.contentslength; i++) {
-        const path = reply.contents[i].path;
-        // Replace any bad characters in filenames:
-        if (/[*_\s\-,]/.test(path)) {
-          const newPath = path.replace(/[*_\s\-,]/g, '');
-          client.mv(path, newPath, { root: 'dropbox' }, (stat, rep) => {
+      if (status === 404) {
+        configDebug(`Metadata request failed with ${status} and reply:`);
+        console.log(reply);
+      } else {
+        this.contentslength = reply.contents.length;
+        this.workaround = 0;
+        for (let i = 0; i < this.contentslength; i++) {
+          const path = reply.contents[i].path;
+          // Replace any bad characters in filenames:
+          // if (/[*_\s\-,]/.test(path)) {
+          if (/[*\s\-,]/.test(path)) {
+            const newPath = path.replace(/[*\s\-,]/g, '');
+            client.mv(path, newPath, { root: 'dropbox' }, (stat, rep) => {
+              this.workaround++;
+              configDebug(`Completed step ${this.workaround} of ${this.contentslength}`);
+              if (stat !== 200) {
+                configDebug(`Name change stat: ${stat}`);
+                configDebug(rep);
+                configDebug(`Old_Path: ${path}`);
+                configDebug(`newPath: ${newPath}`);
+              }
+              // Turn an async function into a synchronous callback:
+              if (this.workaround === this.contentslength)
+                this.finished();
+            });
+          } else
             this.workaround++;
-            configDebug(`Completed step ${this.workaround} of ${this.contentslength}`);
-            if (stat !== 200) {
-              configDebug(`Name change stat: ${stat}`);
-              configDebug(rep);
-              configDebug(`Old_Path: ${path}`);
-              configDebug(`newPath: ${newPath}`);
-            }
-            // Turn an async function into a synchronous callback:
-            if (this.workaround === this.contentslength)
-              this.finished();
-          });
-        } else
-          this.workaround++;
-        if (this.workaround === this.contentslength)
-          this.finished();
+          if (this.workaround === this.contentslength)
+            this.finished();
+        }
       }
     });
   },
