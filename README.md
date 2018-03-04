@@ -84,7 +84,7 @@ hdmi_drive=2
 
 # New HOWTO
 
-Fix name servers? https://www.raspberrypi.org/forums/viewtopic.php?p=171733#p171733
+Fix name servers? https://www.raspberrypi.org/forums/viewtopic.php?p=171733#p171733 (sudo nano resolvconf.conf)
 Disable Display Sleep Mode: https://www.raspberrypi.org/forums/viewtopic.php?p=960208&sid=4f3c69da2d903451a832d908ad557917#p960208
 
 
