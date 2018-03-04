@@ -1,5 +1,0 @@
-- Cron:
-	- Darken Display at night / on in morning
-- Error Handling:
-	- Make sure Display stays "on" when power is cut to TFT
-	- Send error messages to PushBullet

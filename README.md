@@ -1,6 +1,6 @@
 # PiSlideshow
 
->A Raspberry Pi powered smart photo frame / slide show. Anyone can upload photos using Balloon.io, which are added to the display and cycled using FBI
+A Raspberry Pi photo frame using DropBox, Balloon.io, FIM, and Python.
 
 <p align="center">
   <img width="450" height=auto src="./README/cover.jpg" alt="Frame loading">
@@ -11,13 +11,11 @@
 
 ## How it works
 
-Balloon.io allows you to setup a website where anyone can upload images that are placed into the Apps folder of the linked Dropbox account, which works on mobile and desktop. The app pulls all images from the set Dropbox folder and loads them locally. Once completely downloaded, the FBI task is started to update the image at short time intervals. There is additional logic to handle stopping and starting the FBI task to keep the display always up to date as new photos are downloaded and added to the cycle.
+Images are uploaded to Dropbox either through the Dropbox app if the user has permission or uploaded through Balloon.io with given credentials. A Python script on the Raspberry Pi syncs with Dropbox using the V2 API to keep the local directory up to date. [FIM (FBI IMproved)](http://www.nongnu.org/fbi-improved/#docs) is used to cycle the images. A GPIO pin from the Pi is connected to the TFT control board to automatically turn the display off at night.
 
-The photo frame can additionally be turned on and off. I wired a GPIO pin to the display controller that toggles the display state from on in the afternoon and off at night.
+## Hardware
 
-## The hardware
-
-I modified an IKEA frame to hold a small TFT display with space for airflow and mounting point for the Raspberry Pi and driver board. I stacked a piece of thick white paper for a crisp edge around the display then three pieces of laser cut acrylic. The first piece holds the display, the second provides space for the ribbon cable, and the third has air holes for circulation and is the surface that the boards are mounted to with standoffs
+The Raspberry Pi and TFT display are mounted in a modified IKEA frame. Laser cut pieces hold the electronics in place while allowing plenty of airflow.
 
 <p align="center">
   <img width="450" height=auto src="./README/lc_base_layer.jpg" alt="LC base layer">
@@ -29,88 +27,63 @@ I modified an IKEA frame to hold a small TFT display with space for airflow and 
 </p>
 <p align="center">Additional laser cut stacked layers</p>
 
-Three 3D printed feet hold everything sandwiched in place along with the original stand for support. Just on the inside surface of the stand is a small perf board with an indicator LED and pushbutton. The pushbutton allows for manual updates of the display
-
-<p align="center">
-  <img width="450" height=auto src="./README/3D_printed_feet.jpg" alt="3D Printed Feet">
-</p>
-<p align="center">3D Printed Feet</p>
-
 <p align="center">
   <img width="450" height=auto src="./README/the_guts.jpg" alt="The guts">
 </p>
 <p align="center">Full assembly</p>
 
-## How to run your own version
+## Software/Getting Started Guide
 
-<!-- FIXME -->
+1. Boot a fresh Raspberry Pi with Raspbian Jessie ([KyleKing/Another\_Raspberry\_Pi\_Guide](https://github.com/KyleKing/Another_Raspberry_Pi_Guide#starting-fresh))
+2. Download the PiSlideshow code onto the Raspberry Pi (`git clone https://github.com/KyleKing/PiSlideshow.git`)
+3. Build FIM (at the time, FIM was not available via `apt-get`)
 
-*(TODO) I'm currently migrating to Dropbox v2 authentication, which is a major change, so open up an issue and I'll make sure to let you know my current progress*
+    ```bash
+    wget http://download.savannah.nongnu.org/releases/fbi-improved/fim-0.6-trunk.tar.gz
 
-<!-- [![Balloon.io](README/balloon.png)](https://balloon.io/) -->
+    # Install these additional packages for good measure
+    # Source: https://raspberrypi.stackexchange.com/a/53675
+    sudo apt-get install -y flex bison libreadline-dev libexif-dev libpng-dev libjpeg-dev libgif-dev libtiff-dev libpoppler-dev checkinstall
 
-### The FBI Command
+    tar xzf fim-0.6-trunk.tar.gz
+    cd fim-0.6-trunk
+    ./configure --help=short  # read to see if any options are necessary
+    ./configure
+    make
+    sudo su -c "make install"
 
-`sudo fbi -T 1 -a -u -t 2 --blend 2 -noverbose --random --noonce *`
+    # Point to some directory with images
+    fim -R ~/_test/
+    ```
 
--noverbose [get rid of the distracting text banner on the bottom of the screen]
--a [autozoom]
--u or --random [duh]
--T *#* [basically use the device SSH'd into]
--t *#* [time in seconds between images]
---noonce [loop display]
---blend *#* [time in ms to overlap images (no intermediate black screen)]
-* (the path to the images, I already `cd` into the proper directory)
+4. Install RPi.GPIO (Optional: you can comment out the related code in `display.py` if you don't want this functionality): `sudo apt-get -y install python-rpi.gpio`
+5. Install other necessary python packages with `pip install -r requirements.txt`
+6. Make the following modifications to Raspberry Pi:
 
-Use: `ps aux | grep [f]bi` to check if actively running and use the `[f]` to avoid recursively finding the ps aux tack itself
+    - Prevent the display from sleeping ([Source](http://www.raspberry-projects.com/pi/pi-operating-systems/raspbian/gui/disable-screen-sleep) or [Alt Source](https://www.raspberrypi.org/forums/viewtopic.php?p=960208&sid=4f3c69da2d903451a832d908ad557917#p960208)). Run `sudo nano /etc/lightdm/lightdm.conf` then add the below lines to [SetDefaults]:
 
-### Raspberry Pi Tweaks to make this work
+    ```bash
+    # Prevent Display Sleep:
+    xserver-command=X -s 0 dpms
+    ```
 
-Prevent the display from sleeping ([Source](http://www.raspberry-projects.com/pi/pi-operating-systems/raspbian/gui/disable-screen-sleep)). Run `sudo nano /etc/lightdm/lightdm.conf` then add the following lines to the [SeatDefaults]:
+    - Keep the HDMI output always active. Open the Raspberry Pi configuration file for editing with `sudo nano /boot/config.txt` and append below lines:
 
-```bash
-# don't let display sleep:
-xserver-command=X -s 0 dpms
-```
+    ```bash
+    # Always force HDMI output and enable HDMI sound
+    hdmi_force_hotplug=1
+    hdmi_drive=2
+    ```
 
-<!-- ARCHIVED:
-Keep the HDMI output always active. Open the Raspberry Pi configuration file for editing with this `sudo nano /boot/config.txt` and append these lines:
+7. Configure rc.local to run the slide show on system startup: [KyleKing/Another\_Raspberry\_Pi\_Guide/.../BashTools.md](https://github.com/KyleKing/Another_Raspberry_Pi_Guide/blob/master/BashTools.md#boot-on-startup)
+8. Other:
 
-```bash
-#Always force HDMI output and enable HDMI sound
-hdmi_force_hotplug=1
-hdmi_drive=2
-``` -->
-
-# New HOWTO
-
-Fix name servers? https://www.raspberrypi.org/forums/viewtopic.php?p=171733#p171733 (sudo nano resolvconf.conf)
-Disable Display Sleep Mode: https://www.raspberrypi.org/forums/viewtopic.php?p=960208&sid=4f3c69da2d903451a832d908ad557917#p960208
-
-
-FIM Site: http://www.nongnu.org/fbi-improved/#docs
-
-wget http://download.savannah.nongnu.org/releases/fbi-improved/fim-0.6-trunk.tar.gz
-> Note: https://stackoverflow.com/a/33759466/3219667
-> remove the http or https from wget https:github.com/facebook/facebook-php-sdk/archive/master.zip . this worked fine for me.
-
-# https://raspberrypi.stackexchange.com/a/53675
-sudo apt-get install -y flex bison libreadline-dev libexif-dev libpng-dev libjpeg-dev libgif-dev libtiff-dev libpoppler-dev checkinstall
-
-tar xzf fim-0.6-trunk.tar.gz
-cd fim-0.6-trunk
-./configure --help=short
-# read the ./configure --help=short output: you can give options to ./configure
-./configure
-make
-sudo su -c "make install"
-
-fim -R ~/_test/
+    - On this particular Raspberry Pi, I ran into issues with http requests for `apt-get` and needed to manually add the nameserver 8.8.8.8 and 4.4.4.4. If necessary, see this guides: https://www.raspberrypi.org/forums/viewtopic.php?p=171733#p171733 (`sudo nano resolvconf.conf`)
 
 
 ## Acknowledgments
 
-[This guide](http://www.ofbrooklyn.com/2014/01/2/building-photo-frame-raspberry-pi-motion-detector/) inspired this project
+This project was inspired by [this guide](http://www.ofbrooklyn.com/2014/01/2/building-photo-frame-raspberry-pi-motion-detector/)
 
 ## Made by
 
