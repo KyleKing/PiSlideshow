@@ -11,6 +11,7 @@ import time
 import unicodedata
 
 import config
+import display
 import dropbox
 import six
 
@@ -88,6 +89,10 @@ class dbox_syncer(object):
                 self.download(fullname)
                 new_imgs = True
         print ''  # break
+
+        # Start the FIM process
+        if new_imgs:
+            display.refresh_slideshow()
 
     def list_folder(self, folder, subfolder=''):
         """Return inventory list of Dropbox Folder
