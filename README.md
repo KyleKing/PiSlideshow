@@ -82,6 +82,32 @@ hdmi_force_hotplug=1
 hdmi_drive=2
 ``` -->
 
+# New HOWTO
+
+Fix name servers? https://www.raspberrypi.org/forums/viewtopic.php?p=171733#p171733 (sudo nano resolvconf.conf)
+Disable Display Sleep Mode: https://www.raspberrypi.org/forums/viewtopic.php?p=960208&sid=4f3c69da2d903451a832d908ad557917#p960208
+
+
+FIM Site: http://www.nongnu.org/fbi-improved/#docs
+
+wget http://download.savannah.nongnu.org/releases/fbi-improved/fim-0.6-trunk.tar.gz
+> Note: https://stackoverflow.com/a/33759466/3219667
+> remove the http or https from wget https:github.com/facebook/facebook-php-sdk/archive/master.zip . this worked fine for me.
+
+# https://raspberrypi.stackexchange.com/a/53675
+sudo apt-get install -y flex bison libreadline-dev libexif-dev libpng-dev libjpeg-dev libgif-dev libtiff-dev libpoppler-dev checkinstall
+
+tar xzf fim-0.6-trunk.tar.gz
+cd fim-0.6-trunk
+./configure --help=short
+# read the ./configure --help=short output: you can give options to ./configure
+./configure
+make
+sudo su -c "make install"
+
+fim -R ~/_test/
+
+
 ## Acknowledgments
 
 [This guide](http://www.ofbrooklyn.com/2014/01/2/building-photo-frame-raspberry-pi-motion-detector/) inspired this project

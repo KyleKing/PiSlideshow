@@ -1,4 +1,6 @@
-secret.json
-node_modules/
 images/
 logs/
+secret.json
+*.pyc
+*.jp*g
+*.png
