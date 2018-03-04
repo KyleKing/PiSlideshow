@@ -1,5 +1,7 @@
 import json
 
+import schedule
+
 
 def read_json(param, filename='../secret.json'):
     """Return result of a given parameter from a JSON file
@@ -13,6 +15,14 @@ def read_json(param, filename='../secret.json'):
         return datastore[param]
     else:
         raise ValueError('Error: `{}` not in: {}'.format(param, json_string))
+
+
+def schedule_weekdays(*days):
+    """Helper for schedule batch days"""
+    # Source: https://github.com/dbader/schedule/issues/99#issuecomment-292523927
+    for day in (days or ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']):
+        job = schedule.every()
+        yield getattr(job, day)
 
 
 if __name__ == '__main__':

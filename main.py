@@ -15,8 +15,8 @@ schedule.every(45).minutes.do(syncer.start_sync)
 syncer.start_sync()
 
 disp_con = display.display_control()
-schedule.at('8:30').do(disp_con.toggle)
-schedule.at('21:30').do(disp_con.toggle)
+schedule.every().day.at('8:30').do(disp_con.toggle)
+schedule.every().day.at('21:30').do(disp_con.toggle)
 
 while True:
     schedule.run_pending()
