@@ -18,4 +18,4 @@ def read_json(param, filename='../secret.json'):
 if __name__ == '__main__':
     # Example Script
     for param in ['balloon_dir', 'access_token']:
-        print '{}: {}'.format(param, read_json(param))
+        print('{}: {}'.format(param, read_json(param)))

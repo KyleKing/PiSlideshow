@@ -1,14 +1,11 @@
-# import json
 import sys
-# import time
-# from pprint import pprint
+import time
 from subprocess import Popen, call
 
-# import config as cg
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 
 
-def refresh_slideshow(local_dir='~/PiSlideShow/test/'):
+def refresh_slideshow(local_dir='~/Desktop/Images/'):
     """Run the FIM Command
         local_dir - path of folder to source display images from
     """
@@ -16,9 +13,11 @@ def refresh_slideshow(local_dir='~/PiSlideShow/test/'):
     call_cmd('killall fim')
     # Start new FIM process
     fim_cmd = 'fim --random --quiet -R {}'.format(local_dir)
-    fim_cmd += ' -c \'while(1){display;sleep "2";next;}'
-    print 'Initiating Shell Command:', fim_cmd
+    fim_cmd += ' -c \'while(1){display;sleep "3";next;}\''
+    print('Initiating Shell Command:', fim_cmd)
     Popen(fim_cmd, shell=True)
+    time.sleep(10)
+    print('')
 
 
 def call_cmd(cmd_str):
@@ -35,62 +34,41 @@ def call_cmd(cmd_str):
         print >>sys.stderr, 'Execution failed:', e
 
 
-# pin_TFT = 17
-# status_file = 'status.json'
+class display_control(object):
+    """Power display on/off"""
 
+    pin_TFT = 17
 
-# def update_status(new_status, target_file):
-#     """Print the JSON object, then write to file"""
-#     pprint(new_status)
-#     json.dump(new_status, target_file, sort_keys=True, indent=4,
-#               ensure_ascii=False)
+    def __init__(self):
+        print('Configuring GPIO pins')
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
+        GPIO.setup(self.pin_TFT, GPIO.OUT)
+        GPIO.output(self.pin_TFT, GPIO.HIGH)
+        self.display_on = True  # display should be ON
 
+    def toggle(self):
+        print('Toggling TFT state')
+        GPIO.output(self.pin_TFT, GPIO.LOW)
+        time.sleep(0.75)
+        GPIO.output(self.pin_TFT, GPIO.HIGH)
+        time.sleep(5)
+        self.display_on = not self.display_on
+        self.state()
 
-# def configure():
-#     cg.send('Configuring m_TFT')
-#     GPIO.setmode(GPIO.BCM)
-#     GPIO.setwarnings(False)
-#     GPIO.setup(pin_TFT, GPIO.OUT)
-#     GPIO.output(pin_TFT, GPIO.HIGH)
-#     with open('status.json', 'w') as target_file:
-#         new_status = {'on': 'true'}
-#         update_status(new_status, target_file)
-#     cg.send('< DONE configuring m_TFT')
+    def state(self):
+        print('Display is', 'ON' if self.display_on else 'OFF')
 
-
-# def toggle(line):
-#     # Get previous status:
-#     with open(status_file, 'r') as target_file:
-#         p_stat = json.load(target_file)
-#         if 'false' in p_stat['on']:
-#             new_status = {'on': 'true'}
-#         else:
-#             new_status = {'on': 'false'}
-
-#     # Keep current screen state:
-#     if line.lower() in str(p_stat['on']).lower():
-#         cg.send('Already in desired state (' + str(line) + ')')
-#     # Toggle TFT State:
-#     elif line.lower() in str(new_status['on']).lower():
-#         cg.send('Updating state from: ' + str(p_stat['on']))
-#         GPIO.output(pin_TFT, GPIO.LOW)
-#         time.sleep(0.75)
-#         with open(status_file, 'w') as target_file:
-#             update_status(new_status, target_file)
-#     # Deal with gibberish:
-#     else:
-#         cg.send("Error: unknown state: " + line)
-
-#     GPIO.output(pin_TFT, GPIO.HIGH)
-#     time.sleep(5)
-#     cg.send('< DONE toggling m_TFT state')
-
-
-# def close():
-#     GPIO.cleanup()
-#     cg.send('< DONE closing m_TFT')
+    def close(self):
+        print('Releasing GPIO Pins')
+        GPIO.cleanup()
 
 
 if __name__ == '__main__':
     # Only works on Raspberry Pi
     refresh_slideshow()
+    display = display_control()
+    print('Turning display OFF')
+    display.toggle()
+    print('Turning display back ON')
+    display.toggle()

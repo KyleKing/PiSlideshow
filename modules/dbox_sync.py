@@ -24,7 +24,7 @@ def stopwatch(message):
         yield
     finally:
         t1 = time.time()
-        print 'Total elapsed time for %s: %.3f' % (message, t1 - t0)
+        print('Total elapsed time for %s: %.3f' % (message, t1 - t0))
 
 
 class dbox_syncer(object):
@@ -39,15 +39,15 @@ class dbox_syncer(object):
         self.local_dir = os.path.expanduser(local_dir).rstrip('/')
         self.dbox_dir = dbox_dir
 
-        print 'Dropbox folder name:', self.dbox_dir
-        print 'Local directory:', self.local_dir
+        print('Dropbox folder name:', self.dbox_dir)
+        print('Local directory:', self.local_dir)
         if not os.path.exists(self.local_dir):
-            print 'Error:', self.local_dir, 'does not exist on your file system'
+            print('Error:', self.local_dir, 'does not exist on your file system')
             sys.exit(1)
         elif not os.path.isdir(self.local_dir):
-            print 'Error:', self.local_dir, 'is not a folder on your file system'
+            print('Error:', self.local_dir, 'is not a folder on your file system')
             sys.exit(1)
-        print ''
+        print('')
 
     def start_sync(self):
         """Initiate Syncing of local directory with Dropbox one"""
@@ -73,22 +73,22 @@ class dbox_syncer(object):
                 md = listing[norm_name]
                 size = os.path.getsize(fullname)
                 if not (isinstance(md, dropbox.files.FileMetadata) and size == md.size):
-                    print 'Replacing:', filename
+                    print('Replacing:', filename)
                     os.unlink(fullname)
                     self.download(fullname)
                     new_imgs = True
             else:
-                print 'No corresponding file on Dropbox. Deleting:', fullname
+                print('No corresponding file on Dropbox. Deleting:', fullname)
                 os.unlink(fullname)
-        print ''  # break
+        print('')  # break
         # Download any new files not found locally
         for idx, db_fn in enumerate(listing.keys()):
             if db_fn not in local_fns:
                 fullname = '{}/{}'.format(self.local_dir, db_fn)
-                print 'Downloading new file:', db_fn, 'to:', fullname
+                print('Downloading new file:', db_fn, 'to:', fullname)
                 self.download(fullname)
                 new_imgs = True
-        print ''  # break
+        print('')  # break
 
         # Start the FIM process
         if new_imgs:
@@ -107,7 +107,7 @@ class dbox_syncer(object):
             with stopwatch('list_folder'):
                 res = self.dbx.files_list_folder(path)
         except dropbox.exceptions.ApiError as err:
-            print 'Folder listing failed for:', path, '-- assumed empty:', err
+            print('Folder listing failed for:', path, '-- assumed empty:', err)
             return {}
         else:
             rv = {}
@@ -126,7 +126,7 @@ class dbox_syncer(object):
             try:
                 res = self.dbx.files_download_to_file(local_name, dbox_fn)
             except dropbox.exceptions.HttpError as err:
-                print '*** HTTP error', err
+                print('*** HTTP error', err)
                 return None
         return res
 
