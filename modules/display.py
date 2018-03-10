@@ -2,6 +2,7 @@ import sys
 import time
 from subprocess import Popen, call
 
+import config
 import RPi.GPIO as GPIO
 
 
@@ -14,10 +15,10 @@ def refresh_slideshow(local_dir='~/Desktop/Images/'):
     # Start new FIM process
     fim_cmd = 'fim --random --quiet -R {}'.format(local_dir)
     fim_cmd += ' -c \'while(1){display;sleep "3";next;}\''
-    print('Initiating Shell Command:', fim_cmd)
+    config.send('Initiating Shell Command:', fim_cmd)
     Popen(fim_cmd, shell=True)
     time.sleep(10)
-    print('')
+    config.send('')
 
 
 def call_cmd(cmd_str):
@@ -32,6 +33,7 @@ def call_cmd(cmd_str):
             print >>sys.stderr, 'Child returned', status
     except OSError as e:
         print >>sys.stderr, 'Execution failed:', e
+    config.send('Completed call_cmd()')
 
 
 class display_control(object):
@@ -40,7 +42,7 @@ class display_control(object):
     pin_TFT = 17
 
     def __init__(self):
-        print('Configuring GPIO pins')
+        config.send('Configuring GPIO pins for display control')
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
         GPIO.setup(self.pin_TFT, GPIO.OUT)
@@ -48,7 +50,7 @@ class display_control(object):
         self.display_on = True  # display should be ON
 
     def toggle(self):
-        print('Toggling TFT state')
+        config.send('Toggling TFT state')
         GPIO.output(self.pin_TFT, GPIO.LOW)
         time.sleep(0.75)
         GPIO.output(self.pin_TFT, GPIO.HIGH)
@@ -57,10 +59,10 @@ class display_control(object):
         self.state()
 
     def state(self):
-        print('Display is', 'ON' if self.display_on else 'OFF')
+        config.send('Display is', 'ON' if self.display_on else 'OFF')
 
     def close(self):
-        print('Releasing GPIO Pins')
+        config.send('Releasing GPIO Pins')
         GPIO.cleanup()
 
 
@@ -68,7 +70,7 @@ if __name__ == '__main__':
     # Only works on Raspberry Pi
     refresh_slideshow()
     display = display_control()
-    print('Turning display OFF')
+    config.send('Turning display OFF')
     display.toggle()
-    print('Turning display back ON')
+    config.send('Turning display back ON')
     display.toggle()

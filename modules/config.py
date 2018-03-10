@@ -1,4 +1,5 @@
 import json
+import sys
 
 import schedule
 
@@ -25,7 +26,15 @@ def schedule_weekdays(*days):
         yield getattr(job, day)
 
 
+def send(*args):
+    """Force printed output to stdout"""
+    print(args)
+    sys.stdout.flush()
+
+
 if __name__ == '__main__':
     # Example Script
     for param in ['balloon_dir', 'access_token']:
-        print('{}: {}'.format(param, read_json(param)))
+        send('{}: {}'.format(param, read_json(param)))
+    # TODO: schedule_weekdays...
+    send('Done with testing config.py')
