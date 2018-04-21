@@ -93,6 +93,7 @@ class dbox_syncer(object):
 
         # Start the FIM process
         if new_imgs:
+            config.send('New Images, refreshing slide show')
             display.refresh_slideshow()
 
     def list_folder(self, folder, subfolder=''):
@@ -102,6 +103,7 @@ class dbox_syncer(object):
         Return a dict mapping unicode filenames to
         FileMetadata|FolderMetadata entries.
         """
+        config.send('Listing folder: {}'.format(folder))
         path = '/%s/%s' % (folder, subfolder.replace(os.path.sep, '/'))
         path = path.replace('//', '/').rstrip('/')
         try:
@@ -123,6 +125,7 @@ class dbox_syncer(object):
         """
         dbox_fn = '{}/{}'.format(self.dbox_dir.rstrip('/'), local_name.split(os.sep)[-1])
         dbox_fn = dbox_fn.replace('//', '/')
+        config.send('Downloading: {} to {}'.format(dbox_fn, local_name))
         with stopwatch('download'):
             try:
                 res = self.dbx.files_download_to_file(local_name, dbox_fn)

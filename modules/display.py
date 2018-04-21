@@ -6,19 +6,29 @@ import config
 import RPi.GPIO as GPIO
 
 
-def refresh_slideshow(local_dir='~/Desktop/Images/'):
-    """Run the FIM Command
-        local_dir - path of folder to source display images from
-    """
-    # Kill any previously running FIM processes
-    call_cmd('killall fim')
-    # Start new FIM process
+def start_slideshow(local_dir='~/Desktop/Images/'):
+    """Start new FIM process"""
     fim_cmd = 'fim --random --quiet -R {}'.format(local_dir)
     fim_cmd += ' -c \'while(1){display;sleep "3";next;}\''
     config.send('Initiating Shell Command:', fim_cmd)
     Popen(fim_cmd, shell=True)
     time.sleep(10)
     config.send('')
+
+
+def stop_slideshow():
+    """Stop any running instance of FIM"""
+    call_cmd('killall fim')
+
+
+def refresh_slideshow(local_dir='~/Desktop/Images/'):
+    """Run the FIM Command
+    local_dir - path of folder to source display images from
+    """
+    # Kill any previously running FIM processes
+    stop_slideshow()
+    # Restart the Slide show
+    start_slideshow(local_dir)
 
 
 def call_cmd(cmd_str):
