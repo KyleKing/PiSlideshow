@@ -1,3 +1,5 @@
+**Archived 03May2020** - I sold the components for this PhotoFrame on Craigslist and am no longer supporting this code base. Hopefully there is some code in this project that will be useful to my future self or to others! If you open a fork and tag me in an issue (`@kyleking`), I would happy to answer any questions
+
 # PiSlideshow
 
 A Raspberry Pi photo frame using DropBox, Balloon.io, FIM, and Python.
